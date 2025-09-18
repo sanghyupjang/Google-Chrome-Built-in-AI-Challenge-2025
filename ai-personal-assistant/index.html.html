@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personal Assistant Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card h2 {
+            color: #2d3748;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea, input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .result {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .status.loading {
+            background: #fef5e7;
+            color: #d69e2e;
+        }
+
+        .status.success {
+            background: #f0fff4;
+            color: #38a169;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #e53e3e;
+        }
+
+        .api-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .api-tag {
+            padding: 0.3rem 0.8rem;
+            background: #e2e8f0;
+            color: #4a5568;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .api-tag.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .workflow-card {
+            grid-column: 1 / -1;
+        }
+
+        .workflow-steps {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+
+        .step {
+            min-width: 200px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .step.completed {
+            border-color: #38a169;
+            background: #f0fff4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        .demo-hint {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #4c51bf;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1> AI Personal Assistant Dashboard</h1>
+        <p class="subtitle">Powered by Chrome Built-in AI APIs - Complete local processing ensures privacy protection</p>
+    </div>
+
+    <div class="container">
+        <!-- Smart Writing Assistant -->
+        <div class="card">
+            <h2><span class="icon"></span>Smart Writing Assistant</h2>
+            <div class="demo-hint">
+                 Demo: Writer API + Rewriter API + Proofreader API combination
+            </div>
+            
+            <div class="api-selector">
+                <div class="api-tag active" data-api="writer">Writer</div>
+                <div class="api-tag" data-api="rewriter">Rewriter</div>
+                <div class="api-tag" data-api="proofreader">Proofreader</div>
+            </div>
+
+            <div class="input-group">
+                <label>Input Text or Ideas</label>
+                <textarea id="writingInput" placeholder="Enter your ideas, notes, or content to enhance...">Project Meeting Notes
+- New feature development discussion
+- Timeline: Complete by next week
+- Assignee: John Developer
+- Budget review required</textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Writing Style</label>
+                <select id="writingStyle">
+                    <option value="formal">Formal</option>
+                    <option value="casual">Casual</option>
+                    <option value="professional">Professional</option>
+                    <option value="creative">Creative</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="processWriting()">
+                <span></span>Process with AI
+            </button>
+
+            <div id="writingResult" class="result"></div>
+            <div id="writingStatus"></div>
+        </div>
+
+        <!-- Document Summarizer -->
+        <div class="card">
+            <h2><span class="icon"></span>Document Summarizer</h2>
+            <div class="demo-hint">
+                 Demo: Summarizer API - Transform long texts into key insights
+            </div>
+
+            <div class="input-group">
+                <label>Document or Text to Summarize</label>
+                <textarea id="summaryInput" placeholder="Paste long documents, articles, meeting notes, etc...">Artificial Intelligence (AI) is a technology that enables computers to implement human learning abilities, reasoning abilities, perceptual abilities, and natural language understanding abilities. AI research began in the 1950s, and has been rapidly developing recently with advances in deep learning and machine learning technologies. AI is being used in various fields such as speech recognition, image recognition, natural language processing, recommendation systems, and autonomous driving. In particular, the emergence of conversational AI such as ChatGPT has made it familiar to general users. However, along with the development of AI technology, concerns such as privacy protection, job displacement, and bias issues are also being raised, highlighting the need for ethical AI development.</textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Summary Length</label>
+                <select id="summaryLength">
+                    <option value="short">Short (1-2 sentences)</option>
+                    <option value="medium">Medium (3-4 sentences)</option>
+                    <option value="long">Long (5-6 sentences)</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="processSummary()">
+                <span></span>Summarize Document
+            </button>
+
+            <div id="summaryResult" class="result"></div>
+            <div id="summaryStatus"></div>
+        </div>
+
+        <!-- Multilingual Communication -->
+        <div class="card">
+            <h2><span class="icon"></span>Multilingual Communication</h2>
+            <div class="demo-hint">
+                 Demo: Translator API + Proofreader API combination
+            </div>
+
+            <div class="input-group">
+                <label>Text to Translate</label>
+                <textarea id="translateInput" placeholder="Enter text you want to translate...">Hello! I'm developing a personal assistant app using Chrome built-in AI. This app operates completely locally to protect user privacy and provides powerful AI capabilities without requiring an internet connection.</textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <div style="flex: 1;">
+                    <label>Source Language</label>
+                    <select id="sourceLang">
+                        <option value="en">English</option>
+                        <option value="ko">한국어</option>
+                        <option value="ja">日本語</option>
+                        <option value="zh">中文</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Target Language</label>
+                    <select id="targetLang">
+                        <option value="ko">한국어</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="zh">中文</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn" onclick="processTranslation()">
+                    <span></span>Translate
+                </button>
+                <button class="btn btn-secondary" onclick="proofreadTranslation()">
+                    <span></span>Proofread
+                </button>
+            </div>
+
+            <div id="translationResult" class="result"></div>
+            <div id="translationStatus"></div>
+        </div>
+
+        <!-- Voice & Image Input -->
+        <div class="card">
+            <h2><span class="icon">🎤</span>Multimodal Input</h2>
+            <div class="demo-hint">
+                 Demo: Prompt API (Audio & Image) - Voice and image input support
+            </div>
+
+            <div class="input-group">
+                <label>Upload Image</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+
+            <div class="input-group">
+                <label>Voice Memo (Simulation)</label>
+                <textarea id="voiceInput" placeholder="In actual environment, voice input is supported. Here we simulate with text...">Please organize the content discussed in today's meeting. We talked about starting a new project, budget approval, and team composition.</textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Processing Mode</label>
+                <select id="multimodalAction">
+                    <option value="analyze">Image Analysis</option>
+                    <option value="transcribe">Voice to Text</option>
+                    <option value="organize">Content Organization</option>
+                    <option value="action">Extract Action Items</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="processMultimodal()">
+                <span></span>Process Multimodal
+            </button>
+
+            <div id="multimodalResult" class="result"></div>
+            <div id="multimodalStatus"></div>
+        </div>
+
+        <!-- Intelligent Workflow -->
+        <div class="card workflow-card">
+            <h2><span class="icon">⚡</span>Intelligent Workflow</h2>
+            <div class="demo-hint">
+                 Demo: Multi-API automation - Sequential execution of multiple APIs from single input
+            </div>
+
+            <div class="workflow-steps">
+                <div class="step" id="step1">
+                    <h4>Step 1</h4>
+                    <p>Input Analysis</p>
+                </div>
+                <div class="step" id="step2">
+                    <h4>Step 2</h4>
+                    <p>Content Processing</p>
+                </div>
+                <div class="step" id="step3">
+                    <h4>Step 3</h4>
+                    <p>Result Optimization</p>
+                </div>
+                <div class="step" id="step4">
+                    <h4>Step 4</h4>
+                    <p>Final Output</p>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Integrated Input</label>
+                <textarea id="workflowInput" placeholder="e.g., 'Create presentation materials in English', 'Summarize this meeting note and write an email'...">Please write an email to the client based on the following information:
+- Project completion date: Next Friday
+- Additional requirements can be accepted
+- Need to schedule mid-project review meeting
+Please write in a professional yet friendly tone.</textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Workflow Type</label>
+                <select id="workflowType">
+                    <option value="email">Email Writing Flow</option>
+                    <option value="presentation">Presentation Flow</option>
+                    <option value="document">Document Organization Flow</option>
+                    <option value="meeting">Meeting Preparation Flow</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="processWorkflow()">
+                <span></span>Execute Workflow
+            </button>
+
+            <div id="workflowResult" class="result"></div>
+            <div id="workflowStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        // Chrome Built-in AI API Simulation
+        // In actual environment, use window.ai.* APIs
+        
+        const AISimulator = {
+            // Writer API Simulation
+            async writer(prompt, options = {}) {
+                await this.delay(1500);
+                const style = options.tone || 'formal';
+                
+                const responses = {
+                    formal: `I'll create a formal document based on "${prompt}".\n\nTitle: Project Meeting Minutes\n\nMeeting Overview:\n- Date: ${new Date().toLocaleDateString()}\n- Purpose: Discussion regarding new feature development\n\nMain Agenda Items:\n1. Establish new feature development plan\n2. Coordinate project timeline (Target completion: Next week)\n3. Assign responsibility: John Developer\n4. Budget review and approval process\n\nConclusion:\nIt was decided to proceed after sufficient review of the above agenda items.`,
+                    casual: `Let me organize "${prompt}" for you! 😊\n\nProject Meeting Summary:\n- Decided to develop new features\n- Due next week\n- John Developer is in charge\n- Need to check budget\n\nSimple but important stuff!`,
+                    professional: `${prompt}\n\n[Project Meeting Results Report]\n\n1. New Feature Development Approval\n   - Development scope: [Details to be added]\n   - Completion schedule: By next Friday\n   - Lead: John Developer\n\n2. Resource Allocation\n   - Budget review in progress\n   - Additional personnel deployment under review\n\n3. Future Schedule\n   - Weekly progress check\n   - Final review and deployment planning`,
+                    creative: ` Creative transformation of "${prompt}"!\n\n Project Adventure Begins! \n\n Mission: New feature development\n Time limit: Until next week\n Hero: John Developer\n Treasure chest: Budget under review\n\nWhen this adventure is successfully completed, we'll be able to provide better experiences for users! 🌟`
+                };
+                
+                return responses[style] || responses.formal;
+            },
+
+            // Summarizer API Simulation
+            async summarizer(text, options = {}) {
+                await this.delay(1200);
+                const length = options.length || 'medium';
+                
+                const summaries = {
+                    short: "AI is technology that mimics human intelligence and is rapidly growing through recent deep learning advances, though ethical issues are being raised.",
+                    medium: "Artificial Intelligence (AI) is technology researched since the 1950s that has recently advanced rapidly through deep learning and machine learning, being applied in various fields like speech recognition and image recognition. While conversational AI like ChatGPT has made it familiar to general users, concerns about privacy protection and job displacement highlight the need for ethical AI development.",
+                    long: "Artificial Intelligence (AI) is technology that enables computers to implement human learning, reasoning, perceptual, and natural language understanding abilities. Research began in the 1950s and has rapidly developed recently through advances in deep learning and machine learning technologies. It's currently being applied in various fields including speech recognition, image recognition, natural language processing, recommendation systems, and autonomous driving. The emergence of conversational AI like ChatGPT has made it familiar to general users. However, concerns about privacy protection, job displacement, and bias issues are being raised, emphasizing the need for ethical AI development."
+                };
+                
+                return summaries[length];
+            },
+
+            // Translator API Simulation
+            async translator(text, sourceLanguage, targetLanguage) {
+                await this.delay(1000);
+                
+                const translations = {
+                    'en-ko': "안녕하세요! 저는 Chrome 내장 AI를 사용하여 개인 비서 앱을 개발하고 있습니다. 이 앱은 사용자 개인정보를 보호하기 위해 완전히 로컬에서 작동하며 인터넷 연결 없이도 강력한 AI 기능을 제공합니다.",
+                    'en-ja': "こんにちは！Chrome内蔵AIを使用して個人アシスタントアプリを開発しています。このアプリはユーザーのプライバシーを保護するために完全にローカルで動作し、インターネット接続なしで強力なAI機能を提供します。",
+                    'en-zh': "你好！我正在使用Chrome内置AI开发个人助理应用程序。此应用程序完全在本地运行以保护用户隐私，并在无需互联网连接的情况下提供强大的AI功能。",
+                    'en-es': "¡Hola! Estoy desarrollando una aplicación de asistente personal usando la IA integrada de Chrome. Esta aplicación opera completamente de forma local para proteger la privacidad del usuario y proporciona potentes capacidades de IA sin requerir una conexión a internet.",
+                    'en-fr': "Bonjour ! Je développe une application d'assistant personnel utilisant l'IA intégrée de Chrome. Cette application fonctionne entièrement localement pour protéger la vie privée des utilisateurs et fournit de puissantes capacités d'IA sans nécessiter de connexion internet.",
+                    'ko-en': "Hello! I'm developing a personal assistant app using Chrome built-in AI. This app operates completely locally to protect user privacy and provides powerful AI capabilities without requiring an internet connection.",
+                    'ko-ja': "こんにちは！Chrome内蔵AIを活用した個人アシスタントアプリを開発しています。",
+                    'ko-zh': "你好！我正在开发使用Chrome内置AI的个人助理应用。"
+                };
+                
+                const key = `${sourceLanguage}-${targetLanguage}`;
+                return translations[key] || `[${sourceLanguage} → ${targetLanguage}] ${text} (translated)`;
+            },
+
+            // Proofreader API Simulation
+            async proofreader(text) {
+                await this.delay(800);
+                return `${text}\n\n[Proofreading Complete]  Grammar check completed\n- Spelling errors: 0\n- Grammar errors: 0\n- Readability score: 85/100`;
+            },
+
+            // Rewriter API Simulation
+            async rewriter(text, style = 'improve') {
+                await this.delay(1300);
+                return `[Rewritten in ${style} style]\n\n${text}\n\n→ Improved version:\nContent has been revised with clearer and more professional expressions. Readability and communication effectiveness have been enhanced.`;
+            },
+
+            // Delay function
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        };
+
+        // Status display function
+        function showStatus(elementId, type, message) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+            
+            if (type === 'loading') {
+                statusEl.innerHTML = `<span></span> ${message}`;
+            } else if (type === 'success') {
+                statusEl.innerHTML = `<span></span> ${message}`;
+            } else if (type === 'error') {
+                statusEl.innerHTML = `<span></span> ${message}`;
+            }
+        }
+
+        // API selector event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiTags = document.querySelectorAll('.api-tag');
+            apiTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // Remove active from other tags in the same group
+                    const siblings = this.parentElement.querySelectorAll('.api-tag');
+                    siblings.forEach(sibling => sibling.classList.remove('active'));
+                    
+                    // Add active to clicked tag
+                    this.classList.add('active');
+                });
+            });
+        });
+
+        // Smart writing processing
+        async function processWriting() {
+            const input = document.getElementById('writingInput').value;
+            const style = document.getElementById('writingStyle').value;
+            const resultEl = document.getElementById('writingResult');
+            
+            if (!input.trim()) {
+                showStatus('writingStatus', 'error', 'Please provide input text.');
+                return;
+            }
+
+            showStatus('writingStatus', 'loading', 'AI is processing your text...');
+            
+            try {
+                const result = await AISimulator.writer(input, { tone: style });
+                resultEl.textContent = result;
+                showStatus('writingStatus', 'success', `Writing completed in ${style} style!`);
+            } catch (error) {
+                showStatus('writingStatus', 'error', 'An error occurred during processing.');
+            }
+        }
+
+        // Document summarization processing
+        async function processSummary() {
+            const input = document.getElementById('summaryInput').value;
+            const length = document.getElementById('summaryLength').value;
+            const resultEl = document.getElementById('summaryResult');
+            
+            if (!input.trim()) {
+                showStatus('summaryStatus', 'error', 'Please enter text to summarize.');
+                return;
+            }
+
+            showStatus('summaryStatus', 'loading', 'AI is summarizing the document...');
+            
+            try {
+                const result = await AISimulator.summarizer(input, { length });
+                resultEl.textContent = result;
+                showStatus('summaryStatus', 'success', `Summary completed in ${length} format!`);
+            } catch (error) {
+                showStatus('summaryStatus', 'error', 'An error occurred during summarization.');
+            }
+        }
+
+        // Translation processing
+        async function processTranslation() {
+            const input = document.getElementById('translateInput').value;
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const resultEl = document.getElementById('translationResult');
+            
+            if (!input.trim()) {
+                showStatus('translationStatus', 'error', 'Please enter text to translate.');
+                return;
+            }
+
+            if (sourceLang === targetLang) {
+                showStatus('translationStatus', 'error', 'Source and target languages are the same.');
+                return;
+            }
+
+            showStatus('translationStatus', 'loading', 'AI is translating the text...');
+            
+            try {
+                const result = await AISimulator.translator(input, sourceLang, targetLang);
+                resultEl.textContent = result;
+                showStatus('translationStatus', 'success', `Translation completed: ${sourceLang} → ${targetLang}!`);
+            } catch (error) {
+                showStatus('translationStatus', 'error', 'An error occurred during translation.');
+            }
+        }
+
+        // Translation proofreading
+        async function proofreadTranslation() {
+            const resultEl = document.getElementById('translationResult');
+            const currentText = resultEl.textContent;
+            
+            if (!currentText || currentText.includes('[Proofreading Complete]')) {
+                showStatus('translationStatus', 'error', 'No translation to proofread. Please translate first.');
+                return;
+            }
+
+            showStatus('translationStatus', 'loading', 'AI is proofreading the translation...');
+            
+            try {
+                const result = await AISimulator.proofreader(currentText);
+                resultEl.textContent = result;
+                showStatus('translationStatus', 'success', 'Translation proofreading completed!');
+            } catch (error) {
+                showStatus('translationStatus', 'error', 'An error occurred during proofreading.');
+            }
+        }
+
+        // Multimodal input processing
+        async function processMultimodal() {
+            const voiceInput = document.getElementById('voiceInput').value;
+            const imageInput = document.getElementById('imageInput').files[0];
+            const action = document.getElementById('multimodalAction').value;
+            const resultEl = document.getElementById('multimodalResult');
+            
+            if (!voiceInput.trim() && !imageInput) {
+                showStatus('multimodalStatus', 'error', 'Please provide voice memo or image.');
+                return;
+            }
+
+            showStatus('multimodalStatus', 'loading', `AI is processing ${action}...`);
+            
+            try {
+                let result = '';
+                
+                if (imageInput) {
+                    result += `[Image Analysis Results]\n`;
+                    result += `Filename: ${imageInput.name}\n`;
+                    result += `File size: ${(imageInput.size / 1024).toFixed(1)} KB\n\n`;
+                    result += `Analysis content: After analyzing the uploaded image, the following was discovered:\n`;
+                    result += `- Appears to be a document or chart format image\n`;
+                    result += `- Estimated to contain business-related content\n`;
+                    result += `- Additional context may be required\n\n`;
+                }
+                
+                if (voiceInput.trim()) {
+                    result += `[Voice/Text Processing Results]\n\n`;
+                    
+                    switch(action) {
+                        case 'transcribe':
+                            result += `Voice → Text conversion:\n"${voiceInput}"\n\nConversion complete! Accuracy: 95%`;
+                            break;
+                        case 'organize':
+                            result += `Content organization results:\n\n Main Meeting Points\n1. Decision to start new project\n2. Budget approval process initiated\n3. Team composition and role assignment\n\n📝 Structured and organized content completed`;
+                            break;
+                        case 'action':
+                            result += `Action items extracted:\n\n TODO List\n- [ ] Write project proposal\n- [ ] Review and approve budget\n- [ ] Schedule team meeting\n- [ ] Set up weekly progress reports\n\nPriority: High`;
+                            break;
+                        default:
+                            result += `Comprehensive analysis results:\nImportant business matters were identified based on the input content.`;
+                    }
+                }
+                
+                await AISimulator.delay(1500);
+                resultEl.textContent = result;
+                showStatus('multimodalStatus', 'success', `${action} processing completed!`);
+            } catch (error) {
+                showStatus('multimodalStatus', 'error', 'An error occurred during processing.');
+            }
+        }
+
+        // Workflow step update
+        function updateWorkflowStep(stepNumber, status = 'active') {
+            // Reset all steps
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+                
+                if (i < stepNumber) {
+                    step.classList.add('completed');
+                } else if (i === stepNumber) {
+                    step.classList.add(status);
+                }
+            }
+        }
+
+        // Intelligent workflow processing
+        async function processWorkflow() {
+            const input = document.getElementById('workflowInput').value;
+            const workflowType = document.getElementById('workflowType').value;
+            const resultEl = document.getElementById('workflowResult');
+            
+            if (!input.trim()) {
+                showStatus('workflowStatus', 'error', 'Please enter content to process.');
+                return;
+            }
+
+            showStatus('workflowStatus', 'loading', 'Executing intelligent workflow...');
+            
+            try {
+                let finalResult = '';
+                
+                // Step 1: Input analysis
+                updateWorkflowStep(1);
+                showStatus('workflowStatus', 'loading', 'Step 1: Analyzing input content...');
+                await AISimulator.delay(800);
+                
+                // Step 2: Content processing
+                updateWorkflowStep(2);
+                showStatus('workflowStatus', 'loading', 'Step 2: AI is processing content...');
+                await AISimulator.delay(1000);
+                
+                // Step 3: Result optimization
+                updateWorkflowStep(3);
+                showStatus('workflowStatus', 'loading', 'Step 3: Optimizing results...');
+                await AISimulator.delay(700);
+                
+                // Step 4: Final output
+                updateWorkflowStep(4);
+                showStatus('workflowStatus', 'loading', 'Step 4: Generating final results...');
+                await AISimulator.delay(500);
+                
+                // Processing by workflow type
+                switch(workflowType) {
+                    case 'email':
+                        finalResult = `[ Email Writing Complete]\n\nSubject: Project Progress Update\n\nDear Client,\n\nI hope this email finds you well. I'm writing to update you on our project progress.\n\n• Completion date: Next Friday\n• Additional requirements can be accommodated\n• Mid-project review meeting needs to be scheduled\n\nPlease feel free to contact me if you have any questions or concerns.\n\nThank you for your continued support.\n\nBest regards,\n\n[AI automatically written in professional yet friendly tone]`;
+                        break;
+                    case 'presentation':
+                        finalResult = `[ Presentation Structure]\n\n1. Title Slide\n   - Project Status Report\n   - Progress and Future Plans\n\n2. Main Content\n   - Current progress: 80%\n   - Completion target: Next Friday\n   - Additional requirements accommodatable\n\n3. Next Steps\n   - Conduct mid-project review meeting\n   - Final inspection and deployment\n\n[Organized in structured presentation format]`;
+                        break;
+                    case 'document':
+                        finalResult = `[ Document Organization Complete]\n\n## Project Status Report\n\n### Overview\nComprehensive document summarizing the current status of the ongoing project.\n\n### Key Schedule\n- Completion date: Next Friday\n- Mid-project review: Schedule coordination in progress\n\n### Additional Items\n- Client requirement additions accepted\n- Flexible schedule adjustment support\n\n### Conclusion\nProgressing smoothly as planned, with quality assurance review process to follow.`;
+                        break;
+                    case 'meeting':
+                        finalResult = `[ Meeting Preparation Materials]\n\n## Meeting Agenda\n1. Project progress status check\n2. Completion schedule confirmation\n3. Additional requirements discussion\n4. Mid-project review schedule coordination\n\n## Preparation Items\n- Current progress report\n- Schedule and milestone chart\n- Requirement change list\n\n## Expected Discussion Points\n- Quality management measures\n- Resource allocation\n- Risk factor response\n\n[Structured preparation complete for meeting efficiency]`;
+                        break;
+                }
+                
+                updateWorkflowStep(4, 'completed');
+                resultEl.textContent = finalResult;
+                showStatus('workflowStatus', 'success', `${workflowType} workflow execution completed!`);
+                
+            } catch (error) {
+                showStatus('workflowStatus', 'error', 'An error occurred during workflow execution.');
+            }
+        }
+    </script>
+</body>
+</html>
