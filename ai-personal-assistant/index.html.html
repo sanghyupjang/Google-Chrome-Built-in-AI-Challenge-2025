@@ -501,9 +501,9 @@ Please write in a professional yet friendly tone.</textarea>
                 
                 const responses = {
                     formal: `I'll create a formal document based on "${prompt}".\n\nTitle: Project Meeting Minutes\n\nMeeting Overview:\n- Date: ${new Date().toLocaleDateString()}\n- Purpose: Discussion regarding new feature development\n\nMain Agenda Items:\n1. Establish new feature development plan\n2. Coordinate project timeline (Target completion: Next week)\n3. Assign responsibility: John Developer\n4. Budget review and approval process\n\nConclusion:\nIt was decided to proceed after sufficient review of the above agenda items.`,
-                    casual: `Let me organize "${prompt}" for you! 😊\n\nProject Meeting Summary:\n- Decided to develop new features\n- Due next week\n- John Developer is in charge\n- Need to check budget\n\nSimple but important stuff!`,
+                    casual: `Let me organize "${prompt}" for you! \n\nProject Meeting Summary:\n- Decided to develop new features\n- Due next week\n- John Developer is in charge\n- Need to check budget\n\nSimple but important stuff!`,
                     professional: `${prompt}\n\n[Project Meeting Results Report]\n\n1. New Feature Development Approval\n   - Development scope: [Details to be added]\n   - Completion schedule: By next Friday\n   - Lead: John Developer\n\n2. Resource Allocation\n   - Budget review in progress\n   - Additional personnel deployment under review\n\n3. Future Schedule\n   - Weekly progress check\n   - Final review and deployment planning`,
-                    creative: ` Creative transformation of "${prompt}"!\n\n Project Adventure Begins! \n\n Mission: New feature development\n Time limit: Until next week\n Hero: John Developer\n Treasure chest: Budget under review\n\nWhen this adventure is successfully completed, we'll be able to provide better experiences for users! 🌟`
+                    creative: ` Creative transformation of "${prompt}"!\n\n Project Adventure Begins! \n\n Mission: New feature development\n Time limit: Until next week\n Hero: John Developer\n Treasure chest: Budget under review\n\nWhen this adventure is successfully completed, we'll be able to provide better experiences for users! `
                 };
                 
                 return responses[style] || responses.formal;
@@ -718,7 +718,7 @@ Please write in a professional yet friendly tone.</textarea>
                             result += `Voice → Text conversion:\n"${voiceInput}"\n\nConversion complete! Accuracy: 95%`;
                             break;
                         case 'organize':
-                            result += `Content organization results:\n\n Main Meeting Points\n1. Decision to start new project\n2. Budget approval process initiated\n3. Team composition and role assignment\n\n📝 Structured and organized content completed`;
+                            result += `Content organization results:\n\n Main Meeting Points\n1. Decision to start new project\n2. Budget approval process initiated\n3. Team composition and role assignment\n\n Structured and organized content completed`;
                             break;
                         case 'action':
                             result += `Action items extracted:\n\n TODO List\n- [ ] Write project proposal\n- [ ] Review and approve budget\n- [ ] Schedule team meeting\n- [ ] Set up weekly progress reports\n\nPriority: High`;
