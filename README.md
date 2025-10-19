@@ -47,18 +47,19 @@ Access at: http://localhost:8000
 
 
 
+=============================
 
-add option
+add solution
 
 
-Quick Setup Guide: Enable Chrome Built-in AI APIs
+#Quick Setup Guide: Enable Chrome Built-in AI APIs
  Fast Track Solution
-Step 1: Install Chrome Canary
+##Step 1: Install Chrome Canary
 
 Download: https://www.google.com/chrome/canary/
 Must use Canary or Dev (stable Chrome won't work!)
 
-Step 2: Enable Flags
+##Step 2: Enable Flags
 Go to chrome://flags and enable:
 
 #prompt-api-for-gemini-nano → Enabled
@@ -66,7 +67,7 @@ Go to chrome://flags and enable:
 #optimization-guide-on-device-model → Enabled BypassPerfRequirement
 Click "Relaunch"
 
-Step 3: Download AI Model
+##Step 3: Download AI Model
 
 Open DevTools Console (F12)
 Run:
@@ -77,7 +78,7 @@ Go to chrome://components/
 Find "Optimization Guide On Device Model" → Click "Check for update"
 Wait 10-30 minutes (downloads ~1.5GB model)
 
-Step 4: Verify It Works
+##Step 4: Verify It Works
 javascriptconst session = await ai.languageModel.create();
 await session.prompt("Hello!");
  Common Issues:
@@ -90,3 +91,4 @@ javascript(await ai.languageModel.capabilities()).available
 Need 22GB+ free space and stable internet for initial setup. First time takes 20-40 minutes!
 
 TL;DR: Chrome Canary + Enable flags + Download model at chrome://components/ + Wait for download = Ready! 
+
